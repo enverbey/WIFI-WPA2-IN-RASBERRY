@@ -1,0 +1,166 @@
+# Enterprise Wi-Fi Access Point with WPA2-Enterprise (RADIUS) on Linux
+
+Bu proje, bir Linux cihazını (örneğin Raspberry Pi veya Ubuntu PC) WPA2-Enterprise destekli bir kablosuz erişim noktası (Wi-Fi AP) haline getirir. FreeRADIUS ile kimlik doğrulama, `hostapd` ile kablosuz ağ ve `dnsmasq` ile DHCP hizmeti sağlanır.
+
+## ✅ Gereksinimler
+
+* Ubuntu/Debian tabanlı Linux sistem
+* `wlan0` isimli kablosuz ağ arayüzü (USB Wi-Fi adaptör de olabilir)
+* Yüklenmesi gereken yazılımlar:
+
+  * `hostapd`
+  * `dnsmasq`
+  * `freeradius`
+
+## 📂 Proje Yapısı
+
+```
+.
+├── etc/
+│   ├── dnsmasq.conf
+│   ├── hostapd/
+│   │   └── hostapd.conf
+│   └── freeradius/3.0
+│       └── users
+├── scripts/vl
+│   ├── start_ap.sh
+│   └── stop_ap.sh
+└── README.md
+```
+
+## ⚙️ Kurulum ve Yapılandırma Adımları
+
+### 1. DNSMasq Yapılandırması
+
+Dosya: `/etc/dnsmasq.conf`
+
+```
+interface=wlan0
+dhcp-range=192.168.50.10,192.168.50.100,24h
+domain-needed
+bogus-priv
+server=8.8.8.8
+server=8.8.4.4
+```
+
+### 2. Hostapd Yapılandırması
+
+Dosya: `/etc/hostapd/hostapd.conf`
+
+```
+interface=wlan0
+driver=nl80211
+ssid=ENTERPRISE_WIFI2
+hw_mode=g
+channel=6
+country_code=TR
+
+ieee8021x=1
+eap_server=0
+auth_server_addr=127.0.0.1
+auth_server_port=1812
+auth_server_shared_secret=testing123
+
+wpa=2
+wpa_key_mgmt=WPA-EAP
+rsn_pairwise=CCMP
+
+eapol_version=2
+auth_algs=1
+ignore_broadcast_ssid=0
+
+logger_syslog=-1
+logger_syslog_level=3
+
+ctrl_interface=/var/run/hostapd
+ctrl_interface_group=0
+
+ieee80211n=1
+wmm_enabled=1
+disassoc_low_ack=0
+max_num_sta=20
+```
+
+### 3. FreeRADIUS Kullanıcıları
+
+Dosya: `/etc/freeradius/3.0/users`
+Aşşağıdaki şekilde kullanıcı ekleyebilirsiniz. (Dosya sonuna yazın)
+```
+burak Cleartext-Password := "burak123"
+testuser Cleartext-Password := "testpassword"
+```
+
+## 🚀 Başlatma Scripti
+
+Dosya: `/scripts/start_ap.sh`
+
+```bash
+#!/bin/bash
+
+# Servisleri durdur
+sudo systemctl stop NetworkManager
+sudo systemctl stop wpa_supplicant
+
+# IP adresi ayarla
+sudo ip addr flush dev wlan0
+sudo ip addr add 192.168.50.1/24 dev wlan0
+
+# dnsmasq başlat
+sudo dnsmasq -C /etc/dnsmasq.conf &
+
+# freeradius başlat
+sudo freeradius -X &
+
+# hostapd başlat
+sudo hostapd /etc/hostapd/hostapd.conf
+```
+
+## ❌ Durdurma Scripti
+
+Dosya: `scripts/stop_ap.sh`
+
+```bash
+#!/bin/bash
+
+sudo pkill hostapd
+sudo pkill dnsmasq
+sudo pkill freeradius
+sudo ip addr flush dev wlan0
+sudo systemctl restart NetworkManager
+sudo systemctl restart wpa_supplicant
+```
+
+## 🔍 Kontrol
+
+Wi-Fi ağına bağlandıktan sonra istemci IP aldıysa ve şu komut çalışıyorsa bağlantı başarılı:
+
+```bash
+ping 8.8.8.8
+```
+
+## 🔗 Bağlantı Bilgileri
+
+| Özellik              | Bilgi             |
+| -------------------- | ----------------- |
+| SSID                 | ENTERPRISE\_WIFI2 |
+| IP Aralığı           | 192.168.50.10-100 |
+| Gateway              | 192.168.50.1      |
+| DNS                  | 8.8.8.8 / 8.8.4.4 |
+| RADIUS Kullanıcıları | burak / testuser  |
+
+## 💡 Notlar
+
+* Tüm konfigürasyon dosyaları bu repoda `etc/` klasörü altındadır.
+* Script dosyaları `scripts/` klasöründedir ve yürütülebilir hale getirilmelidir:
+
+```bash
+chmod +x scripts/*.sh
+```
+
+## 👤 Yazar
+
+Enver Yılmaz
+
+## 📄 Lisans
+
+MIT License
