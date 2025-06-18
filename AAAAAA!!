@@ -1,0 +1,94 @@
+Harika, sistemin sonunda sağlıklı şekilde ayağa kalkması çok iyi haber. Şimdi adım adım ilerleyelim.
+
+---
+
+## ✅ **1. Terminal 1: Sistemi başlatmak için gereken komutlar**
+
+Bu terminalde önce ortamı sıfırlayıp sonra servislere uygun ayarları uygulayacağız. Bunları sırasıyla tek terminalde çalıştır:
+
+```bash
+# Network servislerini durdur
+sudo systemctl stop NetworkManager
+sudo systemctl stop wpa_supplicant
+sudo killall wpa_supplicant
+
+# Wi-Fi arayüzünü temizle
+sudo rfkill unblock all
+sudo ip link set wlan0 down
+sudo ip addr flush dev wlan0
+sudo ip link set wlan0 up
+
+# Arayüzü AP moduna al
+sudo iw dev wlan0 set type __ap
+
+# Ülke kodunu ayarla (Türkiye için)
+sudo iw reg set TR
+```
+
+Bu adımlardan sonra artık 2. ve 3. terminallerde servisleri çalıştırabiliriz.
+
+---
+
+## ✅ **2. Terminal 2: `hostapd` servisini başlatmak için**
+
+Bu terminalde çalıştır:
+
+```bash
+sudo hostapd /etc/hostapd/hostapd.conf
+```
+
+Aşağıdaki çıktılar görünmeli:
+
+* `interface state UNINITIALIZED->ENABLED`
+* `AP-ENABLED`
+* `RADIUS Authentication server 127.0.0.1:1812`
+
+---
+
+## ✅ **3. Terminal 3: `dnsmasq` servisini başlatmak için**
+
+Bu terminalde çalıştır:
+
+```bash
+sudo dnsmasq -d -C /etc/dnsmasq.conf
+```
+
+Beklenen örnek çıktı:
+
+* `dnsmasq[PID]: started, version...`
+* `dnsmasq[PID]: DHCP, IP range ...`
+* `dnsmasq[PID]: reading /etc/resolv.conf`
+
+---
+
+## 🔄 **Sistemi yeniden başlatma ve tekrar çalıştırma**
+
+1. **Raspberry Pi’yi kapatmak:**
+
+```bash
+sudo poweroff
+```
+
+veya yeniden başlatmak:
+
+```bash
+sudo reboot
+```
+
+2. **Cihaz açıldığında:**
+
+* 3 terminal aç.
+* **Terminal 1:** Yukarıdaki ilk komut bloğunu çalıştır.
+* **Terminal 2:** `hostapd` başlat.
+* **Terminal 3:** `dnsmasq` başlat.
+
+---
+
+## ⚠️ Ek Not:
+
+* `hostapd` veya `dnsmasq` başlatıldığında hata alırsan önce `reset_env.sh` ile ortamı temizle.
+* `dnsmasq` bazen önceki oturumdan kalma port 67 doluluğu nedeniyle çalışmazsa `sudo lsof -i :67` ile kontrol edip süreci öldürebilirsin.
+
+---
+
+İstersen bu adımları bir `.sh` dosyasıyla da otomatikleştirebiliriz. Hazır mısın?

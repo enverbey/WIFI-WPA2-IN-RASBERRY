@@ -1,0 +1,33 @@
+sırasıyla
+
+Bu iki komut ile çalışan şeyi bul.
+- sudo lsof -i :67
+- sudo netstat -tulpn | grep :67
+
+Bulduktan sonra PID sini girerek o işlemi bitir.
+- sudo kill -9 $[PID]
+
+Emin olmak için kontrol et:
+- sudo lsof -i :67
+
+🔁 Şimdi dnsmasq'ı temiz şekilde başlat:
+- sudo dnsmasq -C /etc/dnsmasq.conf
+
+----
+
+Öncesi :
+sudo rfkill list
+sudo rfkill unblock all
+
+
+Bunlar : 
+sudo ip link set wlan0 down
+sudo ip link set wlan0 up
+
+--
+
+sudo iw reg set TR
+sudo hostapd /etc/hostapd/hostapd.conf
+
+
+----------------------------------------------
