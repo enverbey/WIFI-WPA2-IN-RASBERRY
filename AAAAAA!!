@@ -26,6 +26,9 @@ sudo ip addr add 192.168.50.1/24 dev wlan0
 sudo iw reg set TR
 ```
 
+- Network Manager Başlatıyor :
+-sudo systemctl start NetworkManager
+
 Bu adımlardan sonra artık 2. ve 3. terminallerde servisleri çalıştırabiliriz.
 ---
 1. Freeradius Servisini Başlat
