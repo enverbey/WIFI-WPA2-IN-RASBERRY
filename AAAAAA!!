@@ -20,6 +20,7 @@ sudo ip link set wlan0 up
 
 # Arayüzü AP moduna al
 sudo iw dev wlan0 set type __ap
+sudo ip addr add 192.168.50.1/24 dev wlan0
 
 # Ülke kodunu ayarla (Türkiye için)
 sudo iw reg set TR
