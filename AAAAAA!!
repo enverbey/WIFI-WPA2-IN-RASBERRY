@@ -27,7 +27,12 @@ sudo iw reg set TR
 ```
 
 Bu adımlardan sonra artık 2. ve 3. terminallerde servisleri çalıştırabiliriz.
+---
+1. Freeradius Servisini Başlat
+sudo systemctl start freeradius
 
+2. Durumunu Kontrol Et
+sudo systemctl status freeradius
 ---
 
 ## ✅ **2. Terminal 2: `hostapd` servisini başlatmak için**
